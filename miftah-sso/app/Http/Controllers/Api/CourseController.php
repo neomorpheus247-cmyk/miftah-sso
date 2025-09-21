@@ -15,7 +15,6 @@ class CourseController extends Controller
         $this->middleware(['auth:sanctum']);
         $this->middleware('role:teacher,admin')->only(['store', 'update', 'destroy']);
     }
-{
     /**
      * Display a listing of the resource.
      */
