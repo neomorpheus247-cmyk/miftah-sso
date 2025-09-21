@@ -15,10 +15,7 @@
             </router-link>
           </div>
           <div class="flex items-center">
-            <span class="text-gray-700">{{ user.name }}</span>
-            <button @click="logout" class="ml-4 text-gray-700 hover:text-gray-900">
-              Logout
-            </button>
+            <LogoutDropdown :user="user" />
           </div>
         </div>
       </div>
@@ -32,20 +29,13 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { useAuthStore } from './store/auth';
+import LogoutDropdown from './components/LogoutDropdown.vue';
 
-const router = useRouter();
 const authStore = useAuthStore();
-
 const user = computed(() => authStore.user);
 
 function hasRole(roles) {
   return authStore.hasRole(roles);
-}
-
-async function logout() {
-  await authStore.logout();
-  router.push({ name: 'login' });
 }
 </script>
