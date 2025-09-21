@@ -1,61 +1,260 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MiftahSSO - Classroom Single Sign-On System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A secure classroom management system with Google Single Sign-On, Role-Based Access Control (RBAC), and smart session management.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- 🔐 Google Single Sign-On (SSO)
+- 👥 Role-Based Access Control (RBAC)
+- 🔒 Backend-for-Frontend Session Management
+- ⏰ Smart Delayed Logout System
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Technology Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Framework**: Laravel 12.0
+- **Authentication**: Laravel Sanctum + Socialite
+- **Authorization**: Spatie Laravel-Permission
+- **Database**: SQLite (Development) / MySQL (Production)
+- **Queue System**: Laravel Queue (Database Driver)
+- **Frontend Build**: Vite
 
-## Learning Laravel
+## Requirements
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP >= 8.2
+- Node.js >= 16
+- Composer
+- SQLite (Development) / MySQL (Production)
+- Google OAuth 2.0 Credentials
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Installation
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. Clone the repository:
+```bash
+git clone https://github.com/neomorpheus247-cmyk/miftah-sso.git
+cd miftah-sso
+```
 
-## Laravel Sponsors
+2. Install PHP dependencies:
+```bash
+composer install
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+3. Install Node.js dependencies:
+```bash
+npm install --legacy-peer-deps
+```
 
-### Premium Partners
+4. Create and configure environment file:
+```bash
+cp .env.example .env
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+5. Configure the following in your `.env`:
+```env
+APP_NAME=MiftahSSO
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost
 
-## Contributing
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/database.sqlite
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+```
 
-## Code of Conduct
+6. Generate application key:
+```bash
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+7. Create SQLite database:
+```bash
+touch database/database.sqlite
+```
 
-## Security Vulnerabilities
+8. Run migrations and seeders:
+```bash
+php artisan migrate:fresh --seed
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+9. Build frontend assets:
+```bash
+npm run build
+```
+
+10. Start the queue worker:
+```bash
+php artisan queue:work
+```
+
+## Architecture
+
+### Authentication Flow
+
+1. User clicks "Login with Google"
+2. User is redirected to Google OAuth consent screen
+3. After consent, user is redirected back with OAuth token
+4. System creates/updates user record and assigns default role
+5. User is authenticated and session is created
+
+### Role-Based Access Control (RBAC)
+
+#### Roles
+- **Admin**: Full system access
+- **Teacher**: Course management and student view access
+- **Student**: Course viewing and enrollment access
+
+#### Permissions
+- Course Management:
+  - view courses
+  - create courses
+  - edit courses
+  - delete courses
+  - enroll in courses
+- User Management:
+  - manage users
+  - view users
+- System:
+  - manage roles
+  - access settings
+
+### Backend-for-Frontend Session
+
+- Uses Laravel Sanctum for API authentication
+- Stateful authentication for SPA
+- CSRF protection enabled
+- Session encryption enabled
+- Configurable session lifetime
+
+### Delayed Logout System
+
+Implements a 5-minute delayed logout feature:
+
+1. User initiates delayed logout
+2. System queues a logout job for 5 minutes later
+3. User can cancel logout within the 5-minute window
+4. After 5 minutes, user is automatically logged out
+
+#### Queue Configuration
+```env
+QUEUE_CONNECTION=database
+QUEUE_DELAYED_LOGOUT_CONNECTION=database
+QUEUE_DELAYED_LOGOUT_QUEUE=delayed-logout
+QUEUE_DELAYED_LOGOUT_ATTEMPTS=3
+QUEUE_DELAYED_LOGOUT_BACKOFF=60
+```
+
+## API Routes
+
+### Authentication
+```
+GET  /auth/google              - Redirect to Google OAuth
+GET  /auth/google/callback     - Handle OAuth callback
+POST /auth/logout              - Immediate logout
+POST /auth/logout/schedule     - Schedule delayed logout
+POST /auth/logout/cancel       - Cancel scheduled logout
+```
+
+### Courses
+```
+GET    /api/courses           - List all courses
+POST   /api/courses          - Create new course
+GET    /api/courses/{id}     - Get course details
+PUT    /api/courses/{id}     - Update course
+DELETE /api/courses/{id}     - Delete course
+```
+
+## Security Features
+
+1. **OAuth Security**
+   - State verification
+   - HTTPS enforced in production
+   - Secure token handling
+
+2. **RBAC Security**
+   - Server-side role verification
+   - Policy-based authorization
+   - Route middleware protection
+
+3. **Session Security**
+   - Encrypted sessions
+   - CSRF protection
+   - Secure cookie settings
+   - Token-based API authentication
+
+4. **Logout Security**
+   - Immediate logout option
+   - Cancelable delayed logout
+   - Queue job monitoring
+   - Token invalidation
+
+## Development
+
+### Running Tests
+```bash
+php artisan test
+```
+
+### Starting Development Server
+```bash
+php artisan serve
+```
+
+### Watching Assets
+```bash
+npm run dev
+```
+
+### Queue Worker (Development)
+```bash
+php artisan queue:work --queue=delayed-logout
+```
+
+## Production Deployment
+
+1. Set production environment variables:
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
+```
+
+2. Configure secure session settings:
+```env
+SESSION_SECURE_COOKIE=true
+SESSION_DOMAIN=.your-domain.com
+```
+
+3. Install dependencies:
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+4. Build assets:
+```bash
+npm run build
+```
+
+5. Cache configuration:
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+6. Set up Laravel worker service:
+```bash
+sudo cp laravel-worker.service /etc/systemd/system/
+sudo systemctl enable laravel-worker.service
+sudo systemctl start laravel-worker.service
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contributing
+
+Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.

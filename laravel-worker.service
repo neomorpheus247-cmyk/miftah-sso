@@ -1,12 +1,12 @@
 [Unit]
 Description=Laravel Queue Worker
-After=network.target mysql.service redis.service
+After=network.target
 
 [Service]
-User=www-data
-Group=www-data
+User=codespace
+Group=codespace
 Restart=always
-ExecStart=/usr/bin/php /var/www/miftah-sso/artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=60 --memory=256
+ExecStart=/usr/bin/php /workspaces/miftah-sso/artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=60 --memory=256
 RestartSec=30
 StartLimitIntervalSec=0
 

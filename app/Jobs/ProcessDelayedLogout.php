@@ -11,13 +11,21 @@ class ProcessDelayedLogout implements ShouldQueue
 {
     use Queueable;
 
+    public $tries = 3;
+    public $maxExceptions = 3;
+    public $backoff = 60;
+    public $timeout = 30;
+    public $deleteWhenMissingModels = true;
+
     /**
      * Create a new job instance.
      */
     public function __construct(
         protected int $userId,
         protected ?string $tokenId = null
-    ) {}
+    ) {
+        $this->onQueue(config('queue.delayed_logout_queue', 'delayed-logout'));
+    }
 
     /**
      * Execute the job.
