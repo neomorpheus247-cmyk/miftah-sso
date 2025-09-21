@@ -12,9 +12,6 @@ Route::get('auth/google', [SocialiteController::class, 'redirectToGoogle'])
     ->name('google.login');
 Route::get('auth/google/callback', [SocialiteController::class, 'handleGoogleCallback'])
     ->name('google.callback');
-Route::post('auth/logout', [SocialiteController::class, 'logout'])
-    ->name('auth.logout')
-    ->middleware('auth');
 
 // Protected Routes
 Route::middleware(['auth'])->group(function () {

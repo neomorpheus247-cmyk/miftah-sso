@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\CourseEnrollmentController;
 use App\Http\Controllers\Api\UserController;
 
 /*
@@ -12,19 +13,24 @@ use App\Http\Controllers\Api\UserController;
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->group(function () {
-    // User routes
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+// User routes
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
 
-    // Auth routes
+// Auth routes
+Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout/schedule', [AuthController::class, 'scheduleLogout']);
     Route::post('/logout/cancel', [AuthController::class, 'cancelScheduledLogout']);
+});
 
-    // Course routes
-    Route::apiResource('courses', CourseController::class);
-    Route::post('courses/{course}/enroll', [CourseController::class, 'enroll']);
-    Route::post('courses/{course}/unenroll', [CourseController::class, 'unenroll']);
+// Course routes
+Route::apiResource('courses', CourseController::class);
+
+// Course enrollment routes
+Route::prefix('courses')->group(function () {
+    Route::post('{courseId}/enroll', [CourseEnrollmentController::class, 'enroll']);
+    Route::delete('{courseId}/enroll', [CourseEnrollmentController::class, 'unenroll']);
+    Route::get('{courseId}/students', [CourseEnrollmentController::class, 'getEnrolledStudents']);
 });

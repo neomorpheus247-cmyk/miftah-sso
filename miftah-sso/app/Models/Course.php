@@ -19,11 +19,6 @@ class Course extends Model
 
     public function students(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)->withTimestamps();
-    }
-
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsToMany(User::class);
     }
 }

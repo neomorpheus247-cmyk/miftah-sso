@@ -4,6 +4,7 @@
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-semibold text-gray-900">Courses</h1>
         <button
+          v-if="canManageCourse"
           @click="showCreateModal = true"
           class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
         >
@@ -11,7 +12,15 @@
         </button>
       </div>
 
-      <div class="bg-white shadow overflow-hidden sm:rounded-md">
+      <div v-if="loading" class="flex justify-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+
+      <div v-else-if="error" class="p-4 text-center text-red-600 bg-red-50 rounded-md">
+        {{ error }}
+      </div>
+
+      <div v-else class="bg-white shadow overflow-hidden sm:rounded-md">
         <ul v-if="courses.length" class="divide-y divide-gray-200">
           <li v-for="course in courses" :key="course.id">
             <div class="px-4 py-4 sm:px-6">
@@ -19,8 +28,11 @@
                 <div>
                   <h3 class="text-lg font-medium text-gray-900">{{ course.title }}</h3>
                   <p class="mt-1 text-sm text-gray-600">{{ course.description }}</p>
+                  <p v-if="course.creator" class="mt-2 text-xs text-gray-500">
+                    Created by {{ course.creator.name }}
+                  </p>
                 </div>
-                <div class="flex space-x-2">
+                <div v-if="canManageCourse" class="flex space-x-2">
                   <button
                     @click="editCourse(course)"
                     class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -91,10 +103,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, computed, onMounted } from 'vue';
+import { useCourseStore } from '../store/courseStore';
+import { useAuthStore } from '../store/auth';
 
-const courses = ref([]);
+const courseStore = useCourseStore();
+const authStore = useAuthStore();
+
 const showCreateModal = ref(false);
 const editingCourse = ref(null);
 const courseForm = ref({
@@ -102,16 +117,13 @@ const courseForm = ref({
   description: ''
 });
 
-onMounted(fetchCourses);
+const courses = computed(() => courseStore.courses);
+const loading = computed(() => courseStore.loading);
+const error = computed(() => courseStore.error);
 
-async function fetchCourses() {
-  try {
-    const { data } = await axios.get('/api/courses');
-    courses.value = data;
-  } catch (error) {
-    console.error('Failed to fetch courses:', error);
-  }
-}
+onMounted(() => {
+  courseStore.fetchCourses();
+});
 
 function editCourse(course) {
   editingCourse.value = course;
@@ -125,11 +137,10 @@ function editCourse(course) {
 async function saveCourse() {
   try {
     if (editingCourse.value) {
-      await axios.put(`/api/courses/${editingCourse.value.id}`, courseForm.value);
+      await courseStore.updateCourse(editingCourse.value.id, courseForm.value);
     } else {
-      await axios.post('/api/courses', courseForm.value);
+      await courseStore.createCourse(courseForm.value);
     }
-    await fetchCourses();
     showCreateModal.value = false;
     courseForm.value = { title: '', description: '' };
     editingCourse.value = null;
@@ -142,10 +153,14 @@ async function deleteCourse(id) {
   if (!confirm('Are you sure you want to delete this course?')) return;
   
   try {
-    await axios.delete(`/api/courses/${id}`);
-    await fetchCourses();
+    await courseStore.deleteCourse(id);
   } catch (error) {
     console.error('Failed to delete course:', error);
   }
 }
+
+const canManageCourse = computed(() => {
+  const user = authStore.user;
+  return user?.roles.includes('admin') || user?.roles.includes('teacher');
+});
 </script>
