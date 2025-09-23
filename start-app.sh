@@ -1,17 +1,37 @@
 #!/bin/bash
 
+# Get dynamic Replit domain
+REPL_DOMAIN="https://${REPLIT_DOMAINS}"
+
 # Set environment variables for Laravel
 export APP_KEY="base64:+r1F3hqEyBH+FbV0bwVYuf21RYfS9c8mfC68G1Wg3ww="
 export DB_CONNECTION=sqlite
 export DB_DATABASE=/tmp/database.sqlite
 export APP_ENV=local
 export APP_DEBUG=true
-export APP_URL=http://localhost:5000
+export APP_URL="$REPL_DOMAIN"
 export CACHE_STORE=file
-export SESSION_DRIVER=file
 export QUEUE_CONNECTION=database
-export SESSION_SECURE_COOKIE=false
-export SESSION_DOMAIN=null
+
+# Google OAuth Configuration (using secure environment variables)
+export GOOGLE_REDIRECT_URI="$REPL_DOMAIN/auth/google/callback"
+
+# Session Configuration
+export SESSION_DRIVER=cookie
+export SESSION_LIFETIME=120
+export SESSION_ENCRYPT=true
+export SESSION_SECURE_COOKIE=true
+export SESSION_PATH=/
+export SESSION_DOMAIN="$REPLIT_DOMAINS"
+export SESSION_SAME_SITE=none
+
+# Sanctum Configuration
+export SANCTUM_STATEFUL_DOMAINS="$REPLIT_DOMAINS"
+
+# Vite Configuration
+export VITE_API_URL="$REPL_DOMAIN"
+export VITE_APP_NAME="MiftahSSO"
+export VITE_APP_URL="$REPL_DOMAIN"
 
 # Ensure database exists
 touch /tmp/database.sqlite
