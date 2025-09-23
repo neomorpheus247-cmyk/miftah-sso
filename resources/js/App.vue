@@ -64,11 +64,18 @@
 
 <script setup>
 
+import { onMounted } from 'vue';
 import { useAuthStore } from './store/auth';
 import { computed } from 'vue';
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
+
+onMounted(() => {
+  if (!authStore.user) {
+    authStore.fetchUser().catch(() => {});
+  }
+});
 
 function hasRole(roles) {
   return authStore.hasRole(roles);
