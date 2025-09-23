@@ -63,12 +63,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useAuthStore } from './store/auth';
 import LogoutDropdown from './components/LogoutDropdown.vue';
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
+
+onMounted(() => {
+  authStore.fetchUser().catch(() => {});
+});
 
 function hasRole(roles) {
   return authStore.hasRole(roles);
