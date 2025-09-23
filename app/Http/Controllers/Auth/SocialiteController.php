@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -21,7 +22,6 @@ class SocialiteController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
-            
             $user = User::updateOrCreate(
                 ['email' => $googleUser->email],
                 [
@@ -31,20 +31,20 @@ class SocialiteController extends Controller
                 ]
             );
 
-            // If user has no role, redirect to role selection
+            $token = JWTAuth::fromUser($user);
+
+            // If user has no role, redirect to role selection with token
             if (!$user->hasAnyRole(['admin', 'teacher', 'student'])) {
-                Auth::login($user);
-                session()->regenerate();
-                return redirect()->route('register.choose_role');
+                return redirect()->route('register.choose_role')->with('token', $token);
             }
 
-            Auth::login($user);
-            // Regenerate session to prevent fixation and ensure new cookie
-            session()->regenerate();
-
-            return redirect()->intended('/dashboard');
+            // Return token and user info to frontend
+            return response()->json([
+                'token' => $token,
+                'user' => $user
+            ]);
         } catch (\Exception $e) {
-            return redirect('/login')->with('error', 'Google authentication failed');
+            return response()->json(['error' => 'Google authentication failed'], 401);
         }
     }
 

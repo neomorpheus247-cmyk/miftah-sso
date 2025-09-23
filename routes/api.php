@@ -14,12 +14,12 @@ use App\Http\Controllers\Api\UserController;
 */
 
 // User routes
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
 // Auth routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout/schedule', [AuthController::class, 'scheduleLogout']);
     Route::post('/logout/cancel', [AuthController::class, 'cancelScheduledLogout']);

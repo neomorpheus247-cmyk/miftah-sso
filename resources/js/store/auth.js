@@ -21,12 +21,23 @@ export const useAuthStore = defineStore('auth', {
 
     actions: {
         async loginWithGoogle() {
+            // Redirect to Google login
             window.location.href = '/auth/google';
+        },
+
+        async handleGoogleCallback(token, user) {
+            // Store JWT token and user info after Google login
+            localStorage.setItem('jwt_token', token);
+            this.user = user;
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         },
 
         async fetchUser() {
             try {
-                await axios.get('/sanctum/csrf-cookie'); // 🔑 refresh CSRF cookie
+                // Get JWT token from localStorage or cookie
+                const token = localStorage.getItem('jwt_token');
+                if (!token) throw new Error('No JWT token found');
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 const { data } = await axios.get('/api/user');
                 this.user = data;
             } catch (error) {
@@ -37,8 +48,12 @@ export const useAuthStore = defineStore('auth', {
 
         async logout() {
             try {
-                await axios.post('/auth/logout');
+                const token = localStorage.getItem('jwt_token');
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                await axios.post('/api/logout');
+                localStorage.removeItem('jwt_token');
                 this.user = null;
+                delete axios.defaults.headers.common['Authorization'];
             } catch (error) {
                 console.error('Logout failed:', error);
                 throw error;
