@@ -7,6 +7,7 @@ use App\Jobs\ProcessDelayedLogout;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -15,10 +16,8 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        if ($request->user()->currentAccessToken()) {
-            $request->user()->currentAccessToken()->delete();
-        }
-        
+        // Invalidate JWT token
+        JWTAuth::invalidate(JWTAuth::getToken());
         return response()->json(['message' => 'Successfully logged out']);
     }
 
@@ -27,10 +26,10 @@ class AuthController extends Controller
      */
     public function scheduleLogout(Request $request): JsonResponse
     {
-        $token = $request->user()->currentAccessToken();
+        $token = JWTAuth::getToken();
         $userId = $request->user()->id;
 
-        $job = new ProcessDelayedLogout($userId, $token?->id);
+        $job = new ProcessDelayedLogout($userId, $token?->get());
         $jobId = app('queue.failer')->create(
             config('queue.delayed_logout_connection', 'database'),
             config('queue.delayed_logout_queue', 'delayed-logout'),
@@ -38,9 +37,8 @@ class AuthController extends Controller
         );
 
         $request->session()->put('scheduled_logout_job', $jobId);
-        
         dispatch($job)->delay(now()->addMinutes(5));
-        
+
         return response()->json([
             'message' => 'Logout scheduled',
             'logout_at' => now()->addMinutes(5)->toIsoString(),

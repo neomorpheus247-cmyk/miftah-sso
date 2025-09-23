@@ -5,7 +5,7 @@ namespace App\Jobs;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Sanctum\PersonalAccessToken;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ProcessDelayedLogout implements ShouldQueue
 {
@@ -32,15 +32,11 @@ class ProcessDelayedLogout implements ShouldQueue
      */
     public function handle(): void
     {
-        // Invalidate specific token if provided
+        // Invalidate specific JWT token if provided
         if ($this->tokenId) {
-            PersonalAccessToken::findToken($this->tokenId)?->delete();
+            JWTAuth::setToken($this->tokenId)->invalidate();
             return;
         }
-
-        // Otherwise, invalidate all tokens for the user
-        PersonalAccessToken::where('tokenable_id', $this->userId)
-            ->where('tokenable_type', 'App\\Models\\User')
-            ->delete();
+        // Otherwise, you may want to invalidate all tokens for the user (custom logic required)
     }
 }
