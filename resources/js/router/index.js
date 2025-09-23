@@ -9,6 +9,13 @@ import Users from '../views/Users.vue';
 
 const routes = [
   {
+    path: '/',
+    redirect: to => {
+      const authStore = useAuthStore();
+      return authStore.isAuthenticated ? { name: 'dashboard' } : { name: 'login' };
+    }
+  },
+  {
     path: '/login',
     name: 'login',
     component: Login,
@@ -31,6 +38,11 @@ const routes = [
     name: 'users',
     component: Users,
     meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('../views/NotFound.vue')
   }
 ];
 
