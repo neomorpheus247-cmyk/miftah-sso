@@ -1,10 +1,8 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-// Always send cookies
+// Always send cookies (Laravel Sanctum sessions)
 axios.defaults.withCredentials = true;
-// Base API URL (production + local flexibility)
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/';
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -22,14 +20,13 @@ export const useAuthStore = defineStore('auth', {
     },
 
     actions: {
-        loginWithGoogle() {
+        async loginWithGoogle() {
             window.location.href = '/auth/google';
         },
 
         async fetchUser() {
             try {
-                // Get CSRF cookie first (required by Sanctum)
-                await axios.get('/sanctum/csrf-cookie');
+                await axios.get('/sanctum/csrf-cookie'); // 🔑 refresh CSRF cookie
                 const { data } = await axios.get('/api/user');
                 this.user = data;
             } catch (error) {
@@ -40,7 +37,7 @@ export const useAuthStore = defineStore('auth', {
 
         async logout() {
             try {
-                await axios.post('/auth/logout'); // ✅ matches Laravel route
+                await axios.post('/auth/logout');
                 this.user = null;
             } catch (error) {
                 console.error('Logout failed:', error);

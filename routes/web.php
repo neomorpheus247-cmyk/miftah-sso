@@ -1,16 +1,24 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\SocialiteController;
 
 // API Authentication Routes
 Route::get('auth/google', [SocialiteController::class, 'redirectToGoogle'])
     ->name('google.login');
+
 Route::get('auth/google/callback', [SocialiteController::class, 'handleGoogleCallback'])
     ->name('google.callback');
+
 Route::post('auth/logout', [SocialiteController::class, 'logout'])
     ->name('auth.logout')
     ->middleware('auth:sanctum');
+
+// 🔑 Current user endpoint
+Route::middleware('auth:sanctum')->get('/api/user', function (Request $request) {
+    return $request->user()->load('roles');
+});
 
 // Protected API Routes
 Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
