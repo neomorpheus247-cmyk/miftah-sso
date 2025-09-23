@@ -63,15 +63,17 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useAuthStore } from './store/auth';
-import LogoutDropdown from './components/LogoutDropdown.vue';
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 
+// Delay fetchUser until after the page has fully loaded to ensure session cookie is available
 onMounted(() => {
-  authStore.fetchUser().catch(() => {});
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      authStore.fetchUser().catch(() => {});
+    }, 100); // 100ms delay to allow cookies to be set
+  });
 });
 
 function hasRole(roles) {
