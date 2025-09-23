@@ -38,11 +38,18 @@ class SocialiteController extends Controller
                 return redirect()->route('register.choose_role');
             }
 
+
             Auth::login($user);
             // Regenerate session to prevent fixation and ensure new cookie
             session()->regenerate();
 
             return redirect()->intended('/dashboard');
+        }
+        } catch (\Exception $e) {
+            return redirect('/login')->with('error', 'Google authentication failed');
+        }
+    }
+
     /**
      * Show the role selection page after Google login.
      */
@@ -69,10 +76,6 @@ class SocialiteController extends Controller
             $user->assignRole($request->input('role'));
         }
         return redirect('/dashboard');
-    }
-        } catch (\Exception $e) {
-            return redirect('/login')->with('error', 'Google authentication failed');
-        }
     }
 
     public function logout(Request $request)
