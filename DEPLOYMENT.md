@@ -1,5 +1,43 @@
 # Deployment Guide
 
+## Project Structure
+
+### Backend (Laravel)
+```
+miftah-sso/
+├── app/                  # Application core code
+│   ├── Http/            # Controllers, Middleware, Requests
+│   ├── Models/          # Eloquent models
+│   ├── Jobs/            # Queue jobs (e.g., ProcessDelayedLogout)
+│   └── Policies/        # Authorization policies
+├── config/              # Configuration files
+├── database/            # Migrations, factories, and seeders
+├── resources/           # Views and frontend assets
+├── routes/              # API and web routes
+└── tests/               # Feature and Unit tests
+```
+
+### Frontend (Vue.js)
+```
+miftah-sso-frontend/
+├── src/
+│   ├── assets/          # Static assets (CSS, images)
+│   ├── components/      # Vue components
+│   │   ├── auth/        # Authentication components
+│   │   ├── common/      # Shared components
+│   │   ├── course/      # Course-related components
+│   │   └── layout/      # Layout components
+│   ├── composables/     # Vue composables (hooks)
+│   ├── router/          # Vue Router configuration
+│   ├── stores/          # Pinia stores
+│   ├── types/           # TypeScript types/interfaces
+│   ├── utils/           # Utility functions
+│   └── views/           # Page components
+│       ├── admin/       # Admin pages
+│       ├── student/     # Student pages
+│       └── teacher/     # Teacher pages
+```
+
 ## Frontend Deployment (Vercel)
 
 1. Push your frontend code to a GitHub repository:
@@ -127,6 +165,156 @@ LOG_LEVEL=error
 
 3. Set up error monitoring (recommended):
    - Install and configure Sentry, Bugsnag, or similar service
+
+## Google Cloud Platform Deployment
+
+### Option 1: Google App Engine
+
+1. Install Google Cloud SDK and initialize:
+```bash
+# Install Google Cloud SDK
+curl https://sdk.cloud.google.com | bash
+gcloud init
+```
+
+2. Create a new project or select existing:
+```bash
+gcloud projects create miftah-sso-prod
+gcloud config set project miftah-sso-prod
+```
+
+3. Enable required APIs:
+```bash
+gcloud services enable \
+  appengine.googleapis.com \
+  cloudbuild.googleapis.com \
+  cloudscheduler.googleapis.com \
+  cloudsql.googleapis.com \
+  redis.googleapis.com
+```
+
+4. Create Cloud SQL instance:
+```bash
+gcloud sql instances create miftah-sso \
+  --database-version=MYSQL_8_0 \
+  --tier=db-f1-micro \
+  --region=your-region
+```
+
+5. Create Redis instance:
+```bash
+gcloud redis instances create miftah-cache \
+  --size=1 \
+  --region=your-region \
+  --redis-version=redis_6_x
+```
+
+6. Update app.yaml with your configuration:
+   - Replace YOUR_PROJECT_ID
+   - Replace YOUR_REGION
+   - Replace YOUR_INSTANCE
+
+7. Deploy:
+```bash
+gcloud app deploy
+```
+
+### Option 2: Cloud Run
+
+1. Enable required APIs:
+```bash
+gcloud services enable \
+  run.googleapis.com \
+  cloudbuild.googleapis.com \
+  secretmanager.googleapis.com
+```
+
+2. Build and deploy:
+```bash
+# Build the container
+gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/miftah-sso
+
+# Deploy to Cloud Run
+gcloud run deploy miftah-sso \
+  --image gcr.io/YOUR_PROJECT_ID/miftah-sso \
+  --platform managed \
+  --region your-region \
+  --allow-unauthenticated \
+  --set-env-vars="APP_KEY=${APP_KEY},DB_PASSWORD=${DB_PASSWORD}"
+```
+
+3. Set up Cloud SQL connection:
+```bash
+gcloud run services update miftah-sso \
+  --add-cloudsql-instances=YOUR_PROJECT_ID:YOUR_REGION:YOUR_INSTANCE
+```
+
+### Environment Configuration
+
+1. Store secrets in Secret Manager:
+```bash
+# Create secrets
+echo -n "your-app-key" | gcloud secrets create app-key --data-file=-
+echo -n "your-db-password" | gcloud secrets create db-password --data-file=-
+echo -n "your-redis-password" | gcloud secrets create redis-password --data-file=-
+
+# Grant access to the service account
+gcloud secrets add-iam-policy-binding app-key \
+  --member="serviceAccount:YOUR_PROJECT_ID@appspot.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+2. Set up Cloud Storage for media files:
+```bash
+gsutil mb gs://miftah-sso-media
+gsutil iam ch allUsers:objectViewer gs://miftah-sso-media
+```
+
+### Monitoring and Logging
+
+1. Set up Cloud Monitoring:
+```bash
+# Enable Error Reporting
+gcloud services enable clouderrorreporting.googleapis.com
+
+# Set up custom metrics
+gcloud monitoring metrics-descriptors create \
+  custom.googleapis.com/miftah/active_users \
+  --description="Number of active users"
+```
+
+2. Set up Cloud Logging:
+```bash
+# Create log sink
+gcloud logging sinks create miftah-error-logs \
+  storage.googleapis.com/miftah-logs \
+  --log-filter="severity>=ERROR"
+```
+
+### Security Configuration
+
+1. Set up Cloud Armor:
+```bash
+# Create security policy
+gcloud compute security-policies create miftah-security-policy \
+  --description="Security policy for Miftah SSO"
+
+# Add rules
+gcloud compute security-policies rules create 1000 \
+  --security-policy=miftah-security-policy \
+  --expression="request.headers['x-forwarded-for'] != ''" \
+  --action=allow
+```
+
+2. Configure IAM roles:
+```bash
+# Create custom role
+gcloud iam roles create miftahApp \
+  --project=YOUR_PROJECT_ID \
+  --title="Miftah App Role" \
+  --description="Custom role for Miftah SSO application" \
+  --permissions=cloudsql.instances.connect,redis.instances.connect
+```
 
 ## Maintenance
 
