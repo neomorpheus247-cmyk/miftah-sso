@@ -51,9 +51,22 @@ const router = createRouter({
   routes
 });
 
-router.beforeEach((to, from, next) => {
+
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  
+
+  // Always try to fetch user if not already loaded
+  if (authStore.user === null && !authStore.loading) {
+    authStore.loading = true;
+    try {
+      await authStore.fetchUser();
+    } catch (e) {
+      // Ignore error, user will remain null
+    } finally {
+      authStore.loading = false;
+    }
+  }
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login' });
   } else if (to.meta.guest && authStore.isAuthenticated) {
