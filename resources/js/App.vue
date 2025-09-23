@@ -67,14 +67,6 @@
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 
-// Delay fetchUser until after the page has fully loaded to ensure session cookie is available
-onMounted(() => {
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      authStore.fetchUser().catch(() => {});
-    }, 100); // 100ms delay to allow cookies to be set
-  });
-});
 
 function hasRole(roles) {
   return authStore.hasRole(roles);
