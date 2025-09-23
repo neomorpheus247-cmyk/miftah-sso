@@ -3,11 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\SocialiteController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-// Google SSO Routes
+// API Authentication Routes
 Route::get('auth/google', [SocialiteController::class, 'redirectToGoogle'])
     ->name('google.login');
 Route::get('auth/google/callback', [SocialiteController::class, 'handleGoogleCallback'])
@@ -16,18 +12,15 @@ Route::post('auth/logout', [SocialiteController::class, 'logout'])
     ->name('auth.logout')
     ->middleware('auth');
 
-// Protected Routes
-Route::middleware(['auth'])->group(function () {
-    // Common Routes
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+// Protected API Routes
+Route::middleware(['auth'])->prefix('api')->group(function () {
+    // Your protected API routes here
+});
 
-    // Admin Routes
-    Route::middleware(['role:admin'])->group(function () {
-        Route::get('/admin', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
+// SPA Routes - Catch all routes and serve the Vue app
+Route::get('/{any?}', function () {
+    return view('app');
+})->where('any', '^(?!api).*$');
     });
 
     // Teacher Routes
