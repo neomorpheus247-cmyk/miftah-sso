@@ -39,6 +39,15 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
     });
 });
 
+// Debug route to check session and user after login
+use Illuminate\Support\Facades\Auth;
+Route::get('/debug-session', function (Request $request) {
+    return [
+        'user' => Auth::user(),
+        'session' => $request->session()->all(),
+    ];
+});
+
 // SPA Routes - Catch all routes and serve the Vue app
 Route::get('/{any?}', function () {
     return view('app');
