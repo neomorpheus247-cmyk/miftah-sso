@@ -1,22 +1,10 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-// Ensure axios sends cookies with every request (required for Sanctum)
+// Always send cookies
 axios.defaults.withCredentials = true;
-
-// Function to get a specific cookie by name
-const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-};
-
-// Manually set the X-XSRF-TOKEN header
-const xsrfToken = getCookie('XSRF-TOKEN');
-if (xsrfToken) {
-    axios.defaults.headers.common['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
-}
+// Base API URL (production + local flexibility)
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/';
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -34,12 +22,14 @@ export const useAuthStore = defineStore('auth', {
     },
 
     actions: {
-        async loginWithGoogle() {
+        loginWithGoogle() {
             window.location.href = '/auth/google';
         },
 
         async fetchUser() {
             try {
+                // Get CSRF cookie first (required by Sanctum)
+                await axios.get('/sanctum/csrf-cookie');
                 const { data } = await axios.get('/api/user');
                 this.user = data;
             } catch (error) {
@@ -50,7 +40,7 @@ export const useAuthStore = defineStore('auth', {
 
         async logout() {
             try {
-                await axios.post('/logout');
+                await axios.post('/auth/logout'); // ✅ matches Laravel route
                 this.user = null;
             } catch (error) {
                 console.error('Logout failed:', error);
