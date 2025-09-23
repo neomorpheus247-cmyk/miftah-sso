@@ -33,10 +33,6 @@ outputType = "webview"
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 40923
-externalPort = 3000
-
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "export APP_KEY='base64:+r1F3hqEyBH+FbV0bwVYuf21RYfS9c8mfC68G1Wg3ww=' && export DB_CONNECTION=sqlite && export DB_DATABASE=/tmp/database.sqlite && export APP_ENV=production && export APP_DEBUG=false && export CACHE_STORE=file && export SESSION_DRIVER=file && export QUEUE_CONNECTION=database && export SESSION_SECURE_COOKIE=false && export SESSION_DOMAIN=null && touch /tmp/database.sqlite && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=5000"]
