@@ -28,6 +28,10 @@ export SESSION_SAME_SITE=none
 # Sanctum Configuration
 export SANCTUM_STATEFUL_DOMAINS="$REPLIT_DOMAINS"
 
+# Logging Configuration
+export LOG_CHANNEL=daily
+export LOG_LEVEL=debug
+
 # Vite Configuration
 export VITE_API_URL="$REPL_DOMAIN"
 export VITE_APP_NAME="MiftahSSO"
