@@ -166,154 +166,141 @@ LOG_LEVEL=error
 3. Set up error monitoring (recommended):
    - Install and configure Sentry, Bugsnag, or similar service
 
-## Google Cloud Platform Deployment
+## Laravel Vapor Deployment
 
-### Option 1: Google App Engine
+### Prerequisites
 
-1. Install Google Cloud SDK and initialize:
+1. Install Laravel Vapor CLI:
 ```bash
-# Install Google Cloud SDK
-curl https://sdk.cloud.google.com | bash
-gcloud init
+composer global require laravel/vapor-cli
 ```
 
-2. Create a new project or select existing:
+2. Login to Vapor:
 ```bash
-gcloud projects create miftah-sso-prod
-gcloud config set project miftah-sso-prod
+vapor login
 ```
 
-3. Enable required APIs:
+3. Initialize Vapor in your project:
 ```bash
-gcloud services enable \
-  appengine.googleapis.com \
-  cloudbuild.googleapis.com \
-  cloudscheduler.googleapis.com \
-  cloudsql.googleapis.com \
-  redis.googleapis.com
+vapor init
 ```
 
-4. Create Cloud SQL instance:
+### Environment Setup
+
+1. Configure Vapor environment variables:
 ```bash
-gcloud sql instances create miftah-sso \
-  --database-version=MYSQL_8_0 \
-  --tier=db-f1-micro \
-  --region=your-region
+# Production environment
+vapor env:pull production
+vapor env:set production \
+    APP_NAME="MiftahSSO" \
+    APP_ENV=production \
+    APP_DEBUG=false \
+    GOOGLE_CLIENT_ID=your-production-client-id \
+    GOOGLE_CLIENT_SECRET=your-production-client-secret \
+    SANCTUM_STATEFUL_DOMAINS=yourdomain.com \
+    SESSION_DOMAIN=.yourdomain.com \
+    SESSION_SECURE_COOKIE=true
+
+# Staging environment
+vapor env:pull staging
+vapor env:set staging \
+    APP_NAME="MiftahSSO (Staging)" \
+    APP_ENV=staging \
+    APP_DEBUG=true
 ```
 
-5. Create Redis instance:
+2. Configure secrets:
 ```bash
-gcloud redis instances create miftah-cache \
-  --size=1 \
-  --region=your-region \
-  --redis-version=redis_6_x
+vapor secrets:set production \
+    GOOGLE_CLIENT_SECRET=your-production-secret
+
+vapor secrets:set staging \
+    GOOGLE_CLIENT_SECRET=your-staging-secret
 ```
 
-6. Update app.yaml with your configuration:
-   - Replace YOUR_PROJECT_ID
-   - Replace YOUR_REGION
-   - Replace YOUR_INSTANCE
+### Database Setup
 
-7. Deploy:
+1. Create databases:
 ```bash
-gcloud app deploy
+# Production database
+vapor database production
+
+# Staging database
+vapor database staging
 ```
 
-### Option 2: Cloud Run
-
-1. Enable required APIs:
+2. Run migrations:
 ```bash
-gcloud services enable \
-  run.googleapis.com \
-  cloudbuild.googleapis.com \
-  secretmanager.googleapis.com
+vapor command production "php artisan migrate --force"
 ```
 
-2. Build and deploy:
-```bash
-# Build the container
-gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/miftah-sso
+### Queue Configuration
 
-# Deploy to Cloud Run
-gcloud run deploy miftah-sso \
-  --image gcr.io/YOUR_PROJECT_ID/miftah-sso \
-  --platform managed \
-  --region your-region \
-  --allow-unauthenticated \
-  --set-env-vars="APP_KEY=${APP_KEY},DB_PASSWORD=${DB_PASSWORD}"
+1. Configure queue workers:
+```bash
+# Production workers
+vapor queue:deploy production delayed-logout
 ```
 
-3. Set up Cloud SQL connection:
+### Cache Configuration
+
+1. Set up cache:
 ```bash
-gcloud run services update miftah-sso \
-  --add-cloudsql-instances=YOUR_PROJECT_ID:YOUR_REGION:YOUR_INSTANCE
+vapor cache production
 ```
 
-### Environment Configuration
+### Domain Setup
 
-1. Store secrets in Secret Manager:
+1. Configure domains:
 ```bash
-# Create secrets
-echo -n "your-app-key" | gcloud secrets create app-key --data-file=-
-echo -n "your-db-password" | gcloud secrets create db-password --data-file=-
-echo -n "your-redis-password" | gcloud secrets create redis-password --data-file=-
+# Production domain
+vapor domain api.yourdomain.com
+vapor domain:add api.yourdomain.com
 
-# Grant access to the service account
-gcloud secrets add-iam-policy-binding app-key \
-  --member="serviceAccount:YOUR_PROJECT_ID@appspot.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
+# Staging domain
+vapor domain staging.api.yourdomain.com
+vapor domain:add staging.api.yourdomain.com
 ```
 
-2. Set up Cloud Storage for media files:
+2. Configure SSL certificates:
 ```bash
-gsutil mb gs://miftah-sso-media
-gsutil iam ch allUsers:objectViewer gs://miftah-sso-media
+vapor cert api.yourdomain.com
+vapor cert staging.api.yourdomain.com
 ```
 
-### Monitoring and Logging
+### Deployment
 
-1. Set up Cloud Monitoring:
+1. Deploy to staging:
 ```bash
-# Enable Error Reporting
-gcloud services enable clouderrorreporting.googleapis.com
-
-# Set up custom metrics
-gcloud monitoring metrics-descriptors create \
-  custom.googleapis.com/miftah/active_users \
-  --description="Number of active users"
+vapor deploy staging
 ```
 
-2. Set up Cloud Logging:
+2. Deploy to production:
 ```bash
-# Create log sink
-gcloud logging sinks create miftah-error-logs \
-  storage.googleapis.com/miftah-logs \
-  --log-filter="severity>=ERROR"
+vapor deploy production
 ```
 
-### Security Configuration
+### Monitoring
 
-1. Set up Cloud Armor:
+1. View logs:
 ```bash
-# Create security policy
-gcloud compute security-policies create miftah-security-policy \
-  --description="Security policy for Miftah SSO"
+# View recent logs
+vapor logs production
 
-# Add rules
-gcloud compute security-policies rules create 1000 \
-  --security-policy=miftah-security-policy \
-  --expression="request.headers['x-forwarded-for'] != ''" \
-  --action=allow
+# View queue worker logs
+vapor logs production --worker
 ```
 
-2. Configure IAM roles:
+2. Monitor metrics:
 ```bash
-# Create custom role
-gcloud iam roles create miftahApp \
-  --project=YOUR_PROJECT_ID \
-  --title="Miftah App Role" \
-  --description="Custom role for Miftah SSO application" \
-  --permissions=cloudsql.instances.connect,redis.instances.connect
+vapor metrics production
+```
+
+### Rollback
+
+If needed, rollback to previous deployment:
+```bash
+vapor rollback production
 ```
 
 ## Maintenance
