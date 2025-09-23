@@ -1,5 +1,9 @@
+
 import { defineStore } from 'pinia';
 import axios from 'axios';
+
+// Ensure axios sends cookies with every request (required for Sanctum)
+axios.defaults.withCredentials = true;
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
