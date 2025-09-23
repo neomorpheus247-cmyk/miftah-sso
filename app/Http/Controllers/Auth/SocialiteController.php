@@ -31,9 +31,11 @@ class SocialiteController extends Controller
                 ]
             );
 
-            // Assign default student role if user is new
+            // If user has no role, redirect to role selection
             if (!$user->hasAnyRole(['admin', 'teacher', 'student'])) {
-                $user->assignRole('student');
+                Auth::login($user);
+                session()->regenerate();
+                return redirect()->route('register.choose_role');
             }
 
             Auth::login($user);
@@ -41,6 +43,33 @@ class SocialiteController extends Controller
             session()->regenerate();
 
             return redirect()->intended('/dashboard');
+    /**
+     * Show the role selection page after Google login.
+     */
+    public function showRoleSelection(Request $request)
+    {
+        $user = Auth::user();
+        // If user already has a role, redirect to dashboard
+        if ($user && $user->hasAnyRole(['admin', 'teacher', 'student'])) {
+            return redirect('/dashboard');
+        }
+        return view('auth.choose_role');
+    }
+
+    /**
+     * Handle role assignment after Google login.
+     */
+    public function registerRole(Request $request)
+    {
+        $request->validate([
+            'role' => 'required|in:student,teacher',
+        ]);
+        $user = Auth::user();
+        if ($user && !$user->hasAnyRole(['admin', 'teacher', 'student'])) {
+            $user->assignRole($request->input('role'));
+        }
+        return redirect('/dashboard');
+    }
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Google authentication failed');
         }

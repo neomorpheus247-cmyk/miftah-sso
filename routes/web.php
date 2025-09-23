@@ -8,8 +8,16 @@ use App\Http\Controllers\Auth\SocialiteController;
 Route::get('auth/google', [SocialiteController::class, 'redirectToGoogle'])
     ->name('google.login');
 
+
 Route::get('auth/google/callback', [SocialiteController::class, 'handleGoogleCallback'])
     ->name('google.callback');
+
+// Show role selection after Google login
+Route::get('register/choose-role', [SocialiteController::class, 'showRoleSelection'])
+    ->name('register.choose_role');
+// Handle role selection
+Route::post('register/choose-role', [SocialiteController::class, 'registerRole'])
+    ->name('register.role');
 
 Route::post('auth/logout', [SocialiteController::class, 'logout'])
     ->name('auth.logout')
