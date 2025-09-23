@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SocialiteController extends Controller
 {
@@ -25,7 +26,7 @@ class SocialiteController extends Controller
                 ['email' => $googleUser->email],
                 [
                     'name' => $googleUser->name,
-                    'password' => Hash::make(str_random(24)),
+                    'password' => Hash::make(Str::random(24)),
                     'google_id' => $googleUser->id,
                 ]
             );
