@@ -37,6 +37,8 @@ class SocialiteController extends Controller
             }
 
             Auth::login($user);
+            // Regenerate session to prevent fixation and ensure new cookie
+            session()->regenerate();
 
             return redirect()->intended('/dashboard');
         } catch (\Exception $e) {
