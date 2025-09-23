@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-    <nav v-if="user" class="bg-white/80 backdrop-blur-sm border-b border-indigo-100 sticky top-0 z-50">
+    <nav v-if="user && user.name" class="bg-white/80 backdrop-blur-sm border-b border-indigo-100 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
@@ -39,7 +39,7 @@
             </router-link>
           </div>
           <div class="flex items-center">
-            <LogoutDropdown :user="user" />
+            <LogoutDropdown v-if="user && user.name" :user="user" />
           </div>
         </div>
       </div>
