@@ -38,13 +38,11 @@ class SocialiteController extends Controller
                 return redirect()->route('register.choose_role');
             }
 
-
             Auth::login($user);
             // Regenerate session to prevent fixation and ensure new cookie
             session()->regenerate();
 
             return redirect()->intended('/dashboard');
-        }
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Google authentication failed');
         }
