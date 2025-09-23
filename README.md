@@ -34,7 +34,7 @@ git clone https://github.com/neomorpheus247-cmyk/miftah-sso.git
 cd miftah-sso
 ```
 
-2. Install PHP dependencies:
+2. Insphp artisan migrate:fresh --seedtall PHP dependencies:
 ```bash
 composer install
 ```
