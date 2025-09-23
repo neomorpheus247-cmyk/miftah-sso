@@ -40,8 +40,25 @@ export VITE_APP_URL="$REPL_DOMAIN"
 # Ensure database exists
 touch /tmp/database.sqlite
 
+# Generate application key if not set
+if [ -z "$APP_KEY" ]; then
+    php artisan key:generate --force
+fi
+
+# Clear and cache config
+php artisan config:clear
+php artisan config:cache
+
+# Run migrations
+php artisan migrate --force
+
 # Build assets first
 npm run build
+
+# Clear all caches
+php artisan cache:clear
+php artisan view:clear
+php artisan route:clear
 
 # Run Laravel server on port 5000
 php artisan serve --host=0.0.0.0 --port=5000
