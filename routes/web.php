@@ -14,26 +14,16 @@ Route::post('auth/logout', [SocialiteController::class, 'logout'])
 
 // Protected API Routes
 Route::middleware(['auth'])->prefix('api')->group(function () {
-    // Your protected API routes here
+    Route::middleware(['role:teacher,admin'])->group(function () {
+        // Teacher-specific API endpoints
+    });
+
+    Route::middleware(['role:student,teacher,admin'])->group(function () {
+        // Student-specific API endpoints
+    });
 });
 
 // SPA Routes - Catch all routes and serve the Vue app
 Route::get('/{any?}', function () {
     return view('app');
 })->where('any', '^(?!api).*$');
-    });
-
-    // Teacher Routes
-    Route::middleware(['role:teacher,admin'])->group(function () {
-        Route::get('/teacher', function () {
-            return view('teacher.dashboard');
-        })->name('teacher.dashboard');
-    });
-
-    // Student Routes
-    Route::middleware(['role:student,teacher,admin'])->group(function () {
-        Route::get('/student', function () {
-            return view('student.dashboard');
-        })->name('student.dashboard');
-    });
-});
