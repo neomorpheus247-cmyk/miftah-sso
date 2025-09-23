@@ -64,9 +64,11 @@
 
 <script setup>
 
+import { useAuthStore } from './store/auth';
+import { computed } from 'vue';
+
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
-
 
 function hasRole(roles) {
   return authStore.hasRole(roles);
