@@ -40,6 +40,9 @@ class SocialiteController extends Controller
             // Regenerate session to prevent fixation and ensure new cookie
             session()->regenerate();
 
+            // Debug: check if user is authenticated after login
+            dd(Auth::check()); // Should be true
+
             return redirect()->intended('/dashboard');
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Google authentication failed');
