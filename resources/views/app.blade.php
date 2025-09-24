@@ -9,6 +9,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
-    <div id="app"></div>
+    <div id="app">
+        <div style="padding: 20px; text-align: center; color: #666;">
+            Loading application...
+            <br><small>If this message persists, check browser console for errors</small>
+        </div>
+    </div>
+    <script>
+        // Debug info
+        console.log('Vue app should be mounting...');
+        console.log('CSRF Token:', document.querySelector('meta[name="csrf-token"]')?.content);
+    </script>
 </body>
 </html>
