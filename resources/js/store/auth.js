@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia';
-import axios from 'axios';
+import { defineStore } from 'pinia'
+import axios from 'axios'
 
-// Always send cookies with requests (Laravel Sanctum sessions)
-axios.defaults.withCredentials = true;
+// Always send cookies with requests
+axios.defaults.withCredentials = true
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -13,54 +13,63 @@ export const useAuthStore = defineStore('auth', {
     getters: {
         isAuthenticated: (state) => !!state.user,
         hasRole: (state) => (roles) => {
-            if (!state.user) return false;
-            if (!Array.isArray(roles)) roles = [roles];
-            return roles.some(role => state.user.roles.includes(role));
-        }
+            if (!state.user || !state.user.roles) return false
+            if (!Array.isArray(roles)) roles = [roles]
+            return roles.some((role) => state.user.roles.includes(role))
+        },
     },
 
     actions: {
-        async loginWithGoogle() {
-            // Redirect to Google login
-            window.location.href = '/auth/google';
+        // Redirect to Google login
+        loginWithGoogle() {
+            window.location.href = '/auth/google'
         },
 
+        // Fetch authenticated user
         async fetchUser() {
-            this.loading = true;
+            this.loading = true
             try {
-                const { data } = await axios.get('/api/user');
-                this.user = data;
+                // Step 1: Get CSRF cookie (needed for session auth)
+                await axios.get('/sanctum/csrf-cookie')
+
+                // Step 2: Fetch the current user from Laravel
+                const { data } = await axios.get('/api/user')
+                this.user = data
             } catch (error) {
-                this.user = null;
+                console.error('Failed to fetch user:', error)
+                this.user = null
             } finally {
-                this.loading = false;
+                this.loading = false
             }
         },
 
+        // Logout
         async logout() {
             try {
-                await axios.post('/auth/logout');
+                await axios.post('/auth/logout')
             } catch (error) {
-                console.error('Logout failed:', error);
+                console.error('Logout failed:', error)
             } finally {
-                this.user = null;
+                this.user = null
             }
         },
 
+        // Optional: schedule automatic logout
         async scheduleLogout() {
             try {
-                await axios.post('/auth/logout/schedule');
+                await axios.post('/auth/logout/schedule')
             } catch (error) {
-                console.error('Scheduling logout failed:', error);
+                console.error('Scheduling logout failed:', error)
             }
         },
 
+        // Optional: cancel scheduled logout
         async cancelLogout() {
             try {
-                await axios.post('/auth/logout/cancel');
+                await axios.post('/auth/logout/cancel')
             } catch (error) {
-                console.error('Cancel logout failed:', error);
+                console.error('Cancel logout failed:', error)
             }
-        }
-    }
-});
+        },
+    },
+})

@@ -1,9 +1,12 @@
-import axios from 'axios';
-window.axios = axios;
+import axios from 'axios'
 
-// Set global base URL for all Axios requests
-window.axios.defaults.baseURL = 'https://miftah-sso-main-nngest.laravel.cloud';
-// Ensure cookies are always sent
-window.axios.defaults.withCredentials = true;
+// Detect backend API URL from .env or default to localhost:8000
+const API_BASE_URL = import.meta.env.VITE_APP_URL || 'http://localhost:8000'
 
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+// Configure Axios defaults
+axios.defaults.baseURL = API_BASE_URL
+axios.defaults.withCredentials = true // Ensure cookies (Laravel Sanctum) are sent
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
+
+// Expose globally (optional, but useful in Vue apps)
+window.axios = axios
