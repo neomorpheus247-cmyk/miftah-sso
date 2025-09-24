@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Exception;
 
 class GoogleController extends Controller
@@ -16,42 +18,84 @@ class GoogleController extends Controller
      */
     public function redirectToGoogle()
     {
+        // This is the first step, redirecting the user to Google.
         return Socialite::driver('google')->redirect();
     }
 
     /**
-     * Obtain the user information from Google.
+     * Obtain the user information from Google and handle the login/registration.
      */
     public function handleGoogleCallback()
     {
         try {
             $googleUser = Socialite::driver('google')->user();
 
-            // Find existing user or create new one
+            // Find an existing user by email or create a new one.
+            // Using email as the primary key is more reliable as it can link
+            // social logins to users who may have registered with a traditional password.
             $user = User::updateOrCreate(
-                ['google_id' => $googleUser->getId()],
+                ['email' => $googleUser->getEmail()],
                 [
                     'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'password' => bcrypt(str_random(16))
+                    'google_id' => $googleUser->getId(),
+                    // A random password is set for users who only log in via social means.
+                    // This is necessary as the 'password' field is often required.
+                    'password' => Hash::make(Str::random(24)),
                 ]
             );
 
-            // Check if user is new and assign default role
-            if ($user->wasRecentlyCreated) {
-                $user->assignRole('student');
+            // Check if the user has a role assigned.
+            // This is the core logic from your SocialiteController.
+            if (!$user->hasAnyRole(['admin', 'teacher', 'student'])) {
+                // If no role is assigned, log the user in temporarily and
+                // redirect to the role selection page.
+                Auth::login($user, true);
+                return redirect()->route('register.choose_role');
             }
 
-            // Log the user in
-            Auth::login($user);
-
-            return redirect()->intended('/dashboard')
-                ->with('status', 'Successfully logged in with Google!');
+            // If the user already has a role, log them in and redirect to the dashboard.
+            Auth::login($user, true);
+            return redirect()->intended('/dashboard')->with('status', 'Successfully logged in with Google!');
 
         } catch (Exception $e) {
-            return redirect()->route('login')
-                ->with('error', 'Google authentication failed. Please try again.');
+            // Log the exception for debugging purposes.
+            \Log::error('Google authentication failed: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Google authentication failed. Please try again.');
         }
+    }
+
+    /**
+     * Show the role selection page after Google login.
+     * This method is only for users who don't have a role yet.
+     */
+    public function showRoleSelection(Request $request)
+    {
+        $user = Auth::user();
+        // If the user somehow gets to this page with a role, redirect them away.
+        if ($user && $user->hasAnyRole(['admin', 'teacher', 'student'])) {
+            return redirect('/dashboard');
+        }
+        return view('auth.choose_role');
+    }
+
+    /**
+     * Handle role assignment after Google login.
+     */
+    public function registerRole(Request $request)
+    {
+        $request->validate([
+            'role' => 'required|in:student,teacher',
+        ]);
+        
+        $user = Auth::user();
+
+        // Assign the role if the user exists and doesn't already have one.
+        if ($user && !$user->hasAnyRole(['admin', 'teacher', 'student'])) {
+            $user->assignRole($request->input('role'));
+        }
+        
+        // Redirect to the dashboard after the role is assigned.
+        return redirect('/dashboard');
     }
 
     /**
