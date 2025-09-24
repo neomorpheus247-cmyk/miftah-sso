@@ -3,41 +3,51 @@ import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
-    plugins: [
-        laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
-            refresh: true,
-        }),
-        vue({
-            template: {
-                transformAssetUrls: {
-                    base: null,
-                    includeAbsolute: false,
-                }
-            }
-        }),
-    ],
-    server: {
-        host: '0.0.0.0',
-        port: 5173,
-        hmr: {
-            host: 'localhost',
+  plugins: [
+    laravel({
+      input: ['resources/css/app.css', 'resources/js/app.js'],
+      refresh: true,
+    }),
+    vue({
+      template: {
+        transformAssetUrls: {
+          base: null,
+          includeAbsolute: false,
         },
+      },
+    }),
+  ],
+
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    hmr: {
+      host: 'localhost',
     },
-    resolve: {
-        alias: {
-            '@': '/resources/js',
+    watch: {
+      ignored: [
+        '**/node_modules/**',
+        'C:/Users/murph/Application Data/**', // 👈 prevent EPERM scandir errors
+      ],
+    },
+  },
+
+  resolve: {
+    alias: {
+      '@': '/resources/js',
+    },
+  },
+
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router', 'pinia'],
         },
+      },
     },
-    build: {
-        sourcemap: true,
-        rollupOptions: {
-            output: {
-                manualChunks: {
-                    vendor: ['vue', 'vue-router', 'pinia'],
-                },
-            },
-        },
-    },
-    base: '/',
+  },
+
+  base: '/',
 });

@@ -1,10 +1,11 @@
 <?php
 
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout'],
     'allowed_methods' => ['*'],
     'allowed_origins' => [
-        'https://miftah-sso-main-nngest.laravel.cloud',
+        'http://localhost:5173',
+        'http://localhost:8000'
     ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],

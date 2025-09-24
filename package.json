@@ -7,6 +7,7 @@
         "dev": "vite"
     },
     "devDependencies": {
+        "@vitejs/plugin-vue": "^6.0.1",
         "autoprefixer": "^10.4.21",
         "axios": "^1.11.0",
         "laravel-vite-plugin": "^2.0.0",
@@ -15,7 +16,6 @@
         "vite": "^7.0.4"
     },
     "dependencies": {
-        "@vitejs/plugin-vue": "^4.5.0",
         "pinia": "^2.1.7",
         "vue": "^3.3.4",
         "vue-router": "^4.2.5"

@@ -11,17 +11,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Call all seeders here
         $this->call([
             RolesAndPermissionsSeeder::class,
         ]);
-
-        // Create a default admin user
-        $admin = \App\Models\User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password'),
-        ]);
-        
-        $admin->assignRole('admin');
     }
 }

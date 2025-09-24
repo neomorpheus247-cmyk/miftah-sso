@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-// Always send cookies (Laravel Sanctum sessions)
+// Always send cookies with requests (Laravel Sanctum sessions)
 axios.defaults.withCredentials = true;
 
 export const useAuthStore = defineStore('auth', {
@@ -25,38 +25,41 @@ export const useAuthStore = defineStore('auth', {
             window.location.href = '/auth/google';
         },
 
-        async handleGoogleCallback(token, user) {
-            // Store JWT token and user info after Google login
-            localStorage.setItem('jwt_token', token);
-            this.user = user;
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        },
-
         async fetchUser() {
+            this.loading = true;
             try {
-                // Get JWT token from localStorage or cookie
-                const token = localStorage.getItem('jwt_token');
-                if (!token) throw new Error('No JWT token found');
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 const { data } = await axios.get('/api/user');
                 this.user = data;
             } catch (error) {
                 this.user = null;
-                throw error;
+            } finally {
+                this.loading = false;
             }
         },
 
         async logout() {
             try {
-                const token = localStorage.getItem('jwt_token');
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                await axios.post('/api/logout');
-                localStorage.removeItem('jwt_token');
-                this.user = null;
-                delete axios.defaults.headers.common['Authorization'];
+                await axios.post('/auth/logout');
             } catch (error) {
                 console.error('Logout failed:', error);
-                throw error;
+            } finally {
+                this.user = null;
+            }
+        },
+
+        async scheduleLogout() {
+            try {
+                await axios.post('/auth/logout/schedule');
+            } catch (error) {
+                console.error('Scheduling logout failed:', error);
+            }
+        },
+
+        async cancelLogout() {
+            try {
+                await axios.post('/auth/logout/cancel');
+            } catch (error) {
+                console.error('Cancel logout failed:', error);
             }
         }
     }
