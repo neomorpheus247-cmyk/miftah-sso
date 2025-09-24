@@ -43,4 +43,6 @@ export default defineConfig({
             },
         },
     },
+    // Ensure HTTPS URLs for assets in production
+    base: process.env.NODE_ENV === 'production' ? 'https://a01b4fc5-5fcc-4094-83ca-05ea9f578e8a-00-3o32c7wi8465z.kirk.replit.dev/' : '/',
 });
