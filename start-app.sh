@@ -7,9 +7,10 @@ REPL_DOMAIN="https://${REPLIT_DOMAINS}"
 export APP_KEY="base64:+r1F3hqEyBH+FbV0bwVYuf21RYfS9c8mfC68G1Wg3ww="
 export DB_CONNECTION=sqlite
 export DB_DATABASE=/tmp/database.sqlite
-export APP_ENV=local
-export APP_DEBUG=true
+export APP_ENV=production
+export APP_DEBUG=false
 export APP_URL="$REPL_DOMAIN"
+export ASSET_URL="$REPL_DOMAIN"
 export CACHE_STORE=file
 export QUEUE_CONNECTION=database
 
