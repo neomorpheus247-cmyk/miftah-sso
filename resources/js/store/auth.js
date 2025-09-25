@@ -52,7 +52,7 @@ export const useAuthStore = defineStore('auth', {
                 const { data } = await axios.get('/api/user')
                 this.user = data
             } catch (error) {
-                console.error('Failed to fetch user:', error)
+                // If 401 or any error, set user to null and loading to false
                 this.user = null
             } finally {
                 this.loading = false
