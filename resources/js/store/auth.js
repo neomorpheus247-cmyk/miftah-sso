@@ -87,5 +87,10 @@ export const useAuthStore = defineStore('auth', {
                 console.error('Cancel logout failed:', error)
             }
         },
+
+        // After role assignment, refetch user to update roles
+        async afterRoleAssigned() {
+            await this.fetchUser()
+        },
     },
 })
