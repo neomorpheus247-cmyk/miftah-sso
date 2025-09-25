@@ -5,6 +5,11 @@
       <span class="text-gray-600 text-lg">Loading...</span>
     </div>
 
+    <!-- Show login page if not authenticated and not loading -->
+    <div v-else-if="!user">
+      <router-view :key="'login'" />
+    </div>
+
     <!-- Main app -->
     <div v-else>
       <!-- Navigation bar -->
