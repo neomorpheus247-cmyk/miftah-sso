@@ -1,3 +1,6 @@
+# Ignore all database.sqlite files
+database.sqlite
+**/database.sqlite
 *.log
 .DS_Store
 .env*

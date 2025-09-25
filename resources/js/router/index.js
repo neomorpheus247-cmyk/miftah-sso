@@ -87,6 +87,12 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
+  // Wait for user state to finish loading before redirecting
+  if (authStore.loading) {
+    // Prevent navigation until loading is done
+    return;
+  }
+
   // Fetch user if not loaded
   if (authStore.user === null && !authStore.loading) {
     authStore.loading = true;
@@ -97,6 +103,8 @@ router.beforeEach(async (to, from, next) => {
     } finally {
       authStore.loading = false;
     }
+    // After fetching, re-run guard
+    return next(to);
   }
 
   // If not authenticated, always go to login
