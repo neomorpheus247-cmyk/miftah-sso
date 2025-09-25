@@ -20,11 +20,13 @@ Route::get('/login', function () {
 })->name('login');
 
 // --- Google Authentication ---
-Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])
-    ->name('google.login');
+Route::middleware(['web', \App\Http\Middleware\DebugGoogleAuth::class])->group(function () {
+    Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])
+        ->name('google.login');
 
-Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])
-    ->name('google.callback');
+    Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])
+        ->name('google.callback');
+});
 
 // --- Role Selection after Google login ---
 Route::middleware('auth')->group(function () {

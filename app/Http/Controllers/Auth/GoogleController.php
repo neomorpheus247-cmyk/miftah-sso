@@ -28,7 +28,17 @@ class GoogleController extends Controller
     public function handleGoogleCallback()
     {
         try {
+            \Log::debug('Starting Google callback', [
+                'session_id' => session()->getId(),
+                'has_session' => session()->isStarted(),
+                'cookies' => collect(request()->cookies->all())->keys(),
+            ]);
+
             $googleUser = Socialite::driver('google')->user();
+            \Log::debug('Retrieved Google user', [
+                'email' => $googleUser->getEmail(),
+                'id' => $googleUser->getId()
+            ]);
 
             // Find an existing user by email or create a new one.
             // Using email as the primary key is more reliable as it can link
@@ -43,6 +53,12 @@ class GoogleController extends Controller
                     'password' => Hash::make(Str::random(24)),
                 ]
             );
+            
+            \Log::debug('User record state', [
+                'user_id' => $user->id,
+                'is_new' => $user->wasRecentlyCreated,
+                'roles' => $user->roles->pluck('name'),
+            ]);
 
             // Check if the user has a role assigned.
             // This is the core logic from your SocialiteController.
@@ -50,11 +66,25 @@ class GoogleController extends Controller
                 // If no role is assigned, log the user in temporarily and
                 // redirect to the role selection page.
                 Auth::login($user, true);
+                \Log::debug('Logged in user without role', [
+                    'session_id' => session()->getId(),
+                    'auth_check' => Auth::check(),
+                    'user_id' => Auth::id(),
+                    'remember_token' => $user->getRememberToken(),
+                    'cookies' => collect(request()->cookies->all())->keys(),
+                ]);
                 return redirect()->route('register.choose_role');
             }
 
             // If the user already has a role, log them in and redirect to the dashboard.
             Auth::login($user, true);
+            \Log::debug('Logged in user with role', [
+                'session_id' => session()->getId(),
+                'auth_check' => Auth::check(),
+                'user_id' => Auth::id(),
+                'remember_token' => $user->getRememberToken(),
+                'cookies' => collect(request()->cookies->all())->keys(),
+            ]);
             return redirect()->intended('/dashboard')->with('status', 'Successfully logged in with Google!');
 
         } catch (Exception $e) {
