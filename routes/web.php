@@ -60,9 +60,9 @@ Route::prefix('api')->middleware(['web', 'auth'])->group(function () {
     });
 });
 
-// --- Dashboard Route (protected) ---
+// --- Dashboard Route (protected, returns SPA) ---
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('app');
 })->middleware(['auth', 'role:student|teacher|admin'])->name('dashboard');
 
 // --- Debug Route (for testing session + auth) ---
