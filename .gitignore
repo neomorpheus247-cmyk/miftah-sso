@@ -7,6 +7,7 @@
 /.idea
 /.nova
 /.phpunit.cache
+/database/database.sqlite
 /.vscode
 /.zed
 <<<<<<< HEAD
