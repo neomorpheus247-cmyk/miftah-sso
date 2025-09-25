@@ -1,4 +1,4 @@
-<?php<?php
+<?php
 
 
 
@@ -29,19 +29,26 @@ trait CreatesApplicationtrait CreatesApplication
     {     */
 
         $app = require __DIR__.'/../bootstrap/app.php';    public function createApplication(): Application
+<?php
 
+namespace Tests;
+
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Application;
+
+trait CreatesApplication
+{
+    /**
+     * Creates the application.
+     *
+     * @return \Illuminate\Foundation\Application
+     */
+    public function createApplication(): Application
     {
-
-        $app->make(Kernel::class)->bootstrap();        $app = require __DIR__.'/../bootstrap/app.php';
-
-
-
-        return $app;        $app->make(Kernel::class)->bootstrap();
-
-    }
-
-}        $this->clearConfigurationCached($app);
-
+        $app = require __DIR__.'/../bootstrap/app.php';
+        $app->make(Kernel::class)->bootstrap();
+        $this->clearConfigurationCached($app);
         return $app;
     }
 
