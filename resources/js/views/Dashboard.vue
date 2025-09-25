@@ -152,6 +152,10 @@ const user = computed(() => authStore.user);
 const loading = ref(true);
 const enrolledCourses = ref([]);
 
+function hasRole(roles) {
+  return authStore.hasRole(roles);
+}
+
 function logout() {
   authStore.logout();
 }
