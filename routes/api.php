@@ -30,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Course routes
-Route::apiResource('courses', CourseController::class);
+Route::middleware('auth:sanctum')->apiResource('courses', CourseController::class);
 
 // Course enrollment routes
 Route::prefix('courses')->group(function () {
