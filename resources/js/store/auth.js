@@ -1,8 +1,24 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import router from '../router'
 
 // Always send cookies with requests
 axios.defaults.withCredentials = true
+
+// Global interceptor for session/auth errors
+axios.interceptors.response.use(
+    response => response,
+    error => {
+        const code = error.response?.status
+        if (code === 401 || code === 419) {
+            // Force logout and redirect to login
+            const authStore = useAuthStore()
+            authStore.user = null
+            router.push({ name: 'login' })
+        }
+        return Promise.reject(error)
+    }
+)
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({

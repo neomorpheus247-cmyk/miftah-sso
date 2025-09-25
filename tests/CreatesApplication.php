@@ -1,36 +1,5 @@
 <?php
 
-
-
-namespace Tests;namespace Tests;
-
-
-
-use Illuminate\Support\Facades\Artisan;use Illuminate\Support\Facades\Artisan;
-
-use Illuminate\Contracts\Console\Kernel;use Illuminate\Contracts\Console\Kernel;
-
-use Illuminate\Foundation\Application;use Illuminate\Foundation\Application;
-
-
-
-trait CreatesApplicationtrait CreatesApplication
-
-{{
-
-    /**    /**
-
-     * Creates the application.     * Creates the application.
-
-     */     *
-
-    public function createApplication(): Application     * @return \Illuminate\Foundation\Application
-
-    {     */
-
-        $app = require __DIR__.'/../bootstrap/app.php';    public function createApplication(): Application
-<?php
-
 namespace Tests;
 
 use Illuminate\Support\Facades\Artisan;
