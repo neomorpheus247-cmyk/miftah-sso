@@ -131,12 +131,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+
+import { computed, ref, onMounted } from 'vue';
 import { useAuthStore } from '../store/auth';
 import axios from 'axios';
 
 const authStore = useAuthStore();
-const user = authStore.user;
+const user = computed(() => authStore.user);
 const loading = ref(true);
 const enrolledCourses = ref([]);
 
