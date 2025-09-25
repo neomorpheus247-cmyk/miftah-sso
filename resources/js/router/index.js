@@ -16,9 +16,8 @@ const routes = [
     path: '/',
     redirect: to => {
       const authStore = useAuthStore();
-  // Prevent redirect while loading user state
-  if (authStore.loading) return;
-      if (!authStore.isAuthenticated) return { name: 'login' };
+  // If loading or not authenticated, always go to login
+  if (authStore.loading || !authStore.isAuthenticated) return { name: 'login' };
       if (authStore.user && (!authStore.user.roles || authStore.user.roles.length === 0)) {
         return { name: 'choose-role' };
       }
