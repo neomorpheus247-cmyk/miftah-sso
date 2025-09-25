@@ -41,7 +41,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { useAuthStore } from '../store/auth';
 
 const props = defineProps({
   user: {
@@ -54,14 +54,11 @@ const router = useRouter();
 const showDropdown = ref(false);
 const isLogoutScheduled = ref(false);
 let logoutTimer = null;
+const authStore = useAuthStore();
 
-async function logout() {
-  try {
-    await axios.post('/api/logout');
-    router.push({ name: 'login' });
-  } catch (error) {
-    console.error('Logout failed:', error);
-  }
+function logout() {
+  authStore.logout();
+  router.push({ name: 'login' });
 }
 
 async function scheduleLogout() {

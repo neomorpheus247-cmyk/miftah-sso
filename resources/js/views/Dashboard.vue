@@ -2,13 +2,24 @@
   <div class="py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Welcome Section -->
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">
-          Welcome back, {{ user?.name }}!
-        </h1>
-        <p class="mt-2 text-gray-600">
-          Here's what's happening in your classroom
-        </p>
+      <div class="mb-8 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">
+            Welcome back, {{ user?.name }}!
+          </h1>
+          <p class="mt-2 text-gray-600">
+            Here's what's happening in your classroom
+          </p>
+        </div>
+        <button
+          @click="logout"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
+          </svg>
+          Logout
+        </button>
       </div>
 
       <!-- Stats Grid -->
@@ -140,6 +151,10 @@ const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 const loading = ref(true);
 const enrolledCourses = ref([]);
+
+function logout() {
+  authStore.logout();
+}
 
 onMounted(async () => {
   try {
