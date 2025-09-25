@@ -70,3 +70,20 @@ Route::get('/debug-session', function (Request $request) {
 Route::get('/{any}', function () {
     return view('app');
 })->where('any', '^(?!api|auth).*$');
+
+Route::get('/debug-auth', function (Request $request) {
+    return [
+        'auth_check'   => auth()->check(),
+        'auth_user'    => auth()->user(),
+        'session_all'  => $request->session()->all(),
+        'cookies'      => $request->cookies->all(),
+    ];
+});
+
+Route::get('/debug-sessions-file', function () {
+    return [
+        'session_cookie_name' => config('session.cookie'),
+        'session_driver' => config('session.driver'),
+    ];
+});
+
