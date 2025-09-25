@@ -88,8 +88,17 @@ class GoogleController extends Controller
             return redirect()->intended('/dashboard')->with('status', 'Successfully logged in with Google!');
 
         } catch (Exception $e) {
-            // Log the exception for debugging purposes.
-            \Log::error('Google authentication failed: ' . $e->getMessage());
+            // Log detailed exception information
+            \Log::error('Google authentication failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'session_id' => session()->getId(),
+                'session_status' => session()->isStarted(),
+                'auth_check' => Auth::check(),
+                'cookies' => collect(request()->cookies->all())->keys(),
+                'request_path' => request()->path(),
+                'request_url' => request()->url(),
+            ]);
             return redirect()->route('login')->with('error', 'Google authentication failed. Please try again.');
         }
     }
