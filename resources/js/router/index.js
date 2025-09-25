@@ -88,22 +88,13 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
-  // Wait for user state to finish loading before redirecting
-  if (authStore.loading) {
-    // Prevent navigation until loading is done
-    return;
-  }
-
-  // Fetch user if not loaded
-  if (authStore.user === null && !authStore.loading) {
+  // Only fetch user once per app load
+  if (authStore.user === null && !authStore.loading && to.name !== 'login') {
     authStore.loading = true;
     try {
       await authStore.fetchUser();
-    } catch (e) {
-      // Ignore error
-    } finally {
-      authStore.loading = false;
-    }
+    } catch (e) {}
+    authStore.loading = false;
     // After fetching, re-run guard
     return next(to);
   }
