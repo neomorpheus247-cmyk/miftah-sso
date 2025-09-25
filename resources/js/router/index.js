@@ -20,8 +20,11 @@ const routes = [
       if (authStore.user && (!authStore.user.roles || authStore.user.roles.length === 0)) {
         return { name: 'choose-role' };
       }
+      // Existing user: show dashboard by role
       if (authStore.hasRole('student')) return { name: 'student-dashboard' };
       if (authStore.hasRole('teacher')) return { name: 'teacher-dashboard' };
+      if (authStore.hasRole('admin')) return { name: 'dashboard' };
+      // Fallback: generic dashboard
       return { name: 'dashboard' };
     }
   },
@@ -84,46 +87,41 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
-  // Always try to fetch user if not already loaded
+  // Fetch user if not loaded
   if (authStore.user === null && !authStore.loading) {
     authStore.loading = true;
     try {
       await authStore.fetchUser();
     } catch (e) {
-      // Ignore error, user will remain null
+      // Ignore error
     } finally {
       authStore.loading = false;
     }
   }
 
-  // If user is authenticated but has no role, force choose-role page
+  // If not authenticated, always go to login
+  if (!authStore.isAuthenticated && to.name !== 'login') {
+    return next({ name: 'login' });
+  }
+
+  // If authenticated and no role, always go to choose-role
   if (authStore.isAuthenticated && authStore.user && (!authStore.user.roles || authStore.user.roles.length === 0) && to.name !== 'choose-role') {
     return next({ name: 'choose-role' });
   }
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: 'login' });
-  } else if (to.meta.guest && authStore.isAuthenticated) {
-    // Redirect to correct dashboard based on role
-    if (authStore.hasRole('student')) {
-      next({ name: 'student-dashboard' });
-    } else if (authStore.hasRole('teacher')) {
-      next({ name: 'teacher-dashboard' });
-    } else {
-      next({ name: 'dashboard' });
+  // If authenticated and has role, route to dashboard by role
+  if (authStore.isAuthenticated && authStore.user && authStore.user.roles && authStore.user.roles.length > 0) {
+    if (to.name === 'login' || to.name === 'choose-role') {
+      // Redirect to dashboard by role
+      if (authStore.hasRole('student')) return next({ name: 'student-dashboard' });
+      if (authStore.hasRole('teacher')) return next({ name: 'teacher-dashboard' });
+      if (authStore.hasRole('admin')) return next({ name: 'dashboard' });
+      return next({ name: 'dashboard' });
     }
-  } else if (to.meta.roles && !authStore.hasRole(to.meta.roles)) {
-    // Redirect to correct dashboard based on role
-    if (authStore.hasRole('student')) {
-      next({ name: 'student-dashboard' });
-    } else if (authStore.hasRole('teacher')) {
-      next({ name: 'teacher-dashboard' });
-    } else {
-      next({ name: 'dashboard' });
-    }
-  } else {
-    next();
   }
+
+  // Otherwise, allow navigation
+  next();
 });
 
 export default router;
