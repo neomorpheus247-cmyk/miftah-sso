@@ -10,17 +10,6 @@
 /database/database.sqlite
 /.vscode
 /.zed
-<<<<<<< HEAD
-/database.sqlite
-/auth.json
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
-=======
 auth.json
 node_modules/
 public/build/
@@ -32,7 +21,6 @@ storage/app/public/
 storage/framework/
 storage/logs/
 vendor/
->>>>>>> fd2de35f38bb63176f040d01b967e7382286329d
 Homestead.json
 database/*.sqlite
 Homestead.yaml
